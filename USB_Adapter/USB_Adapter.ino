@@ -16,42 +16,13 @@ AltSoftSerial altser;
 // D9 - AltSoftSerial TX
 
 #define BLINKLED_13        13 
-#define SYSTEM_ENABLE_12   12
-#define PANEL_LED5_11     11
-#define PANEL_LED4_10     10
-#define PANEL_LED3_9     9     //do not use, soft serial tx
-#define SHOOT_BUTTON_8    8       //do not use, soft serial rx
-#define INTAKE_BUTTON_7   7
-#define PANEL_LED2_6     6
-#define PANEL_LED1_5     5
-#define TEST_SWITCH_4     4
-#define R_STICK_BUTTON_3  3
-#define L_STICK_BUTTON_2  2
-
-#define STICK2X      0
-#define STICK2Y      1
-#define STICK1X      2
-#define STICK1Y      3
-#define SHOOTERSPEED 4
-
+#define VINPIN_A0 A0
 unsigned long triggerTime;
 const int panelLedArr[5] = {5,6,9,10,11}; //map of wired pins to LEDs
 int incomingChar;
 int uutChar;
 int charCount;
 
-/////////////////////////////////////////////////////////////////////////////
-// FUNCTION: setLED,   returns nothing
-// ARGUMENTS: LEDnum is value 0 to 4, brightness is 0 (off) to 255 (full on)
-void setLED(int LEDnum, unsigned int brightness) {
-  if ( brightness > 255 ) brightness = 255;
-  unsigned long brightness_l = brightness & 255; 
-  //  index to pins, use panelLedArr   ,  value to write is non-linear
-  if ( 0 <= LEDnum < 5 ) {
-    int LEDoutput = min( 255-((brightness_l+7)/8), (255-brightness_l)*3 );
-    analogWrite( panelLedArr[LEDnum], LEDoutput );
-  }
-}
 /////////////////////////////////////////////////////////////////////////////////
 // called once at start
 void setup(){
@@ -65,14 +36,6 @@ void setup(){
   pinMode(13   , OUTPUT);
   digitalWrite(13   , HIGH);
   
-  // init inputs and enable pullup
-  pinMode(SYSTEM_ENABLE_12   , INPUT_PULLUP); // LOW is all stop
-//  pinMode(SHOOT_BUTTON    , INPUT_PULLUP); // LOW is SHOOT
-  pinMode(INTAKE_BUTTON_7   , INPUT_PULLUP); // LOW is INATKE
-  pinMode(TEST_SWITCH_4     , INPUT_PULLUP); // LOW is on
-  pinMode(R_STICK_BUTTON_3  , INPUT_PULLUP); // LOW is active
-  pinMode(L_STICK_BUTTON_2  , INPUT_PULLUP); // LOW is active
-
   triggerTime = millis() + 3000;
   delay(2000);
 }
@@ -133,7 +96,7 @@ void loop() {
 void runSerialMonitor(void) {
   int inchar;
   Serial.println("---- Serial monitor, q to quit------");
-  while ( inchar=Serial.read() != 'q' ) { // until quit is hit
+  while ( (inchar=Serial.read()) != 'q' ) { // until quit is hit
     if ( inchar > 0 ) {
       altser.write(inchar);
     }
@@ -148,8 +111,8 @@ void runSerialMonitor(void) {
 /////////////////   runServoDetect   ////////////////////////////////////////////
 void runServoDetect(void) {
  unsigned long testnow;     // milliseconds
- unsigned long pulseStart;    // microseconds
- unsigned long pulseEnd;      // microseconds
+// unsigned long pulseStart;    // microseconds
+// unsigned long pulseEnd;      // microseconds
  unsigned long pulseLength;             // microseconds  
  
   Serial.println("servo detect on pin 2");
@@ -183,23 +146,8 @@ void localCircuitTest(void) {
     // once per period 
     if ( testnow >= triggerTime ) {
       triggerTime = testnow + 100; //period
-      int value1 = (analogRead(SHOOTERSPEED)+3)>>2;    ///STICK1Y)+3)>>2;
-      // int value2 = (analogRead(STICK2Y)+3)>>2;
-      if ( value1 < 128 ) {
-        setLED( 0, (127-value1)*2 );
-        setLED( 1, 0);
-      } else {
-        setLED( 0, 0);
-        setLED( 1, (value1-128)*2 );
-      }
-      // check is display test on
-      if ( digitalRead(TEST_SWITCH_4) == LOW ) { // LOW is on
-        //set our LED on or off based on 4   
-        digitalWrite(13, HIGH);
-      } else {
-        digitalWrite(13, LOW);  
-      }
-      setLED( 4, digitalRead(12)*250 );
-    }
+      int value1 = (analogRead(A1)+3)>>2;   
+      Serial.print( value1 );
+   }
   }
 }
