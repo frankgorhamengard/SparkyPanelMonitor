@@ -173,6 +173,7 @@ void runTWIrcv(void) {
 //      int value1 = (analogRead(A1)+3)>>2;   
 //    Serial.print( value1 );
       showTWIdata = true;
+      delay(200);
 //    }
   }
   showTWIdata = false;
